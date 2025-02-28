@@ -1,0 +1,64 @@
+name: Terraform CI/CD Pipeline
+
+on:
+  # Dispara o pipeline em push ou pull request no branch main
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  TF_VERSION: 1.5.7 # Versão do Terraform a ser usada
+  GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }} # Credenciais do Google Cloud
+  TF_VAR_project_id: ${{ secrets.TF_VAR_PROJECT_ID }} # Variável do projeto
+  TF_VAR_service_name: n8n # Nome do serviço
+  TF_VAR_environment: hml # Ambiente
+  TF_VAR_region: southamerica-east1 # Região
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Fazer checkout do código
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Configurar o Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      # 3. Configurar autenticação do Google Cloud
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ env.GOOGLE_CREDENTIALS }}
+
+      # 4. Inicializar o Terraform
+      - name: Terraform Init
+        run: terraform init
+
+      # 5. Validar o código Terraform
+      - name: Terraform Validate
+        run: terraform validate
+
+      # 6. Planejar as alterações (terraform plan)
+      - name: Terraform Plan
+        run: terraform plan -var="project_id=${{ env.TF_VAR_project_id }}" \
+                            -var="service_name=${{ env.TF_VAR_service_name }}" \
+                            -var="environment=${{ env.TF_VAR_environment }}" \
+                            -var="region=${{ env.TF_VAR_region }}"
+        id: plan
+
+      # 7. Aplicar as alterações (terraform apply) apenas em push no branch main
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -auto-approve \
+                            -var="project_id=${{ env.TF_VAR_project_id }}" \
+                            -var="service_name=${{ env.TF_VAR_service_name }}" \
+                            -var="environment=${{ env.TF_VAR_environment }}" \
+                            -var="region=${{ env.TF_VAR_region }}"
