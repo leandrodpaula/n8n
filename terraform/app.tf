@@ -10,9 +10,9 @@ resource "google_cloud_run_v2_service" "cloud_run" {
   name              = "${var.service_name}-${var.environment}"
   location          = var.region
   ingress           = "INGRESS_TRAFFIC_ALL"
-  
+  deletion_protection = false 
   lifecycle {
-    create_before_destroy = true
+    create_before_destroy = false
     prevent_destroy = false
   }
   timeouts {
@@ -27,11 +27,21 @@ resource "google_cloud_run_v2_service" "cloud_run" {
     }
     scaling {
       min_instance_count = 0
-      max_instance_count = 10
+      max_instance_count = 3
+    }
+    volumes {
+        name = "flow_data"
+        gcs {
+          bucket    = google_storage_bucket.flow_bucket.name
+          read_only = false
+        }
     }
 
     containers {
       
+
+
+
       image = "docker.io/n8nio/n8n:latest"
       ports {
         container_port = 5678
@@ -39,12 +49,17 @@ resource "google_cloud_run_v2_service" "cloud_run" {
 
       resources {
         startup_cpu_boost = "true"
+        cpu_idle = "true"
+        limits = {
+          cpu = "2"
+          memory= "4Gi"
+        }
       }
 
       startup_probe {
-        initial_delay_seconds = 3
-        timeout_seconds = 3
-        period_seconds = 3
+        initial_delay_seconds = 30
+        timeout_seconds = 30
+        period_seconds = 120
         failure_threshold = 3
         tcp_socket {
           port = 5678
@@ -52,12 +67,17 @@ resource "google_cloud_run_v2_service" "cloud_run" {
         }
       }
       liveness_probe {
-        initial_delay_seconds = 3
-        timeout_seconds = 3
-        period_seconds = 3
+        initial_delay_seconds = 30
+        timeout_seconds = 30
+        period_seconds = 120
         http_get {
           path = "/"
         }
+      }
+
+      volume_mounts {
+        name = "flow_data"
+        mount_path = "/n8n/"
       }
 
         
@@ -69,6 +89,12 @@ resource "google_cloud_run_v2_service" "cloud_run" {
           name  = "N8N_BASIC_AUTH_USER"
           value = "admin"
         }
+
+        env{
+          name = "N8N_CONFIG_FILES"
+          value="/n8n/config/"
+        }
+
         env {
           name  = "N8N_BASIC_AUTH_PASSWORD"
            value_source{
@@ -120,3 +146,5 @@ resource "google_cloud_run_service_iam_member" "public_access" {
   role     = "roles/run.invoker"
   member   = "allUsers"
 }
+
+

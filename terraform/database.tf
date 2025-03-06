@@ -4,7 +4,7 @@ resource "google_sql_database_instance" "postgres_instance" {
   database_version = "POSTGRES_14"
   depends_on = [google_service_networking_connection.private_vpc_connection]
 
-
+  deletion_protection = false
   settings {
     tier = "db-f1-micro" # Instância básica para economizar custos
     ip_configuration {

@@ -48,3 +48,18 @@ resource "google_vpc_access_connector" "cloud_run_connector" {
   min_instances = 2
   max_instances = 3
 }
+
+
+# Firewall rule to allow internet outbound traffic
+resource "google_compute_firewall" "allow_internet_outbound" {
+  name    = "${var.service_name}-${var.environment}-allow-internet-outbound"
+  network = google_compute_network.vpc_network.name
+
+  allow {
+    protocol = "tcp"
+    ports    = ["0-65535"]
+  }
+
+  direction = "EGRESS"
+  destination_ranges = ["0.0.0.0/0"]
+}

@@ -9,3 +9,11 @@ resource "google_project_iam_member" "cloud_run_invoker" {
   role    = "roles/run.invoker"
   member  = "serviceAccount:${google_service_account.sa.email}"
 }
+
+
+
+resource "google_storage_bucket_iam_member" "bucket_admin" {
+    bucket = google_storage_bucket.flow_bucket.name
+    role   = "roles/storage.admin"
+    member = "serviceAccount:${google_service_account.sa.email}"
+}
