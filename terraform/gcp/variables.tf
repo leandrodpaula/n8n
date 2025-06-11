@@ -1,4 +1,4 @@
 variable "project_id" {}
 variable "service_name" {}
 variable "environment" { default = "hml" }
-variable "region" { default = "southamerica-east1" }
+variable "gcp_region" { default = "southamerica-east1" }
