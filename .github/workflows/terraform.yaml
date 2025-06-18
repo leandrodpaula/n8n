@@ -50,11 +50,15 @@ jobs:
 
       # 5. Validar o código Terraform
       - name: Terraform Validate
-        run: terraform validate
+        run: |
+          cd terraform
+          terraform validate
 
       # 6. Planejar as alterações (terraform plan)
       - name: Terraform Plan HML
-        run: terraform plan
+        run: |
+          cd terraform 
+          terraform plan
         id: plan_hml
 
       # 7. Aplicar as alterações (terraform apply) para HML
