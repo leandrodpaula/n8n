@@ -9,14 +9,6 @@ on:
     branches:
       - main
 
-# Define environments for approval and sequential deployment
-environments:
-  hml:
-    # Add any specific protection rules for hml if needed, e.g., reviewers
-  prd:
-    needs: hml # Specifies that prd depends on hml
-    # Add any specific protection rules for prd
-
 env:
   TF_VERSION: 1.5.7 # Versão do Terraform a ser usada
   GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }} # Credenciais do Google Cloud
