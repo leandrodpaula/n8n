@@ -16,7 +16,9 @@ resource "google_alloydb_instance" "alloydb_instance" {
   cluster           = google_alloydb_cluster.alloydb_cluster.name
   instance_id       = "${var.service_name}-${var.environment}-alloydb-instance"
   instance_type     = "PRIMARY" # Basic instance type, consider changing for production
-  machine_cpu_count = 2         # Basic machine type
+  machine_config {
+    cpu_count = 2
+  }
   # availability_type = "REGIONAL" # Or "ZONAL" depending on requirements. Default is ZONAL if not specified.
 
   # Deletion protection should ideally be true for production environments
