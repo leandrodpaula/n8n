@@ -54,7 +54,7 @@ jobs:
 
       # 6. Planejar as alterações (terraform plan)
       - name: Terraform Plan HML
-        run: terraform plan -var="project_id=${{ env.TF_VAR_project_id }}"                                 -var="service_name=${{ env.TF_VAR_service_name }}"                                 -var="environment=${{ env.TF_VAR_environment }}"                                 -var="region=${{ env.TF_VAR_region }}"
+        run: terraform plan
         id: plan_hml
 
       # 7. Aplicar as alterações (terraform apply) para HML
@@ -95,7 +95,7 @@ jobs:
         run: terraform validate
 
       - name: Terraform Plan PRD
-        run: terraform plan -var="project_id=${{ env.TF_VAR_project_id }}"                                 -var="service_name=${{ env.TF_VAR_service_name }}"                                 -var="environment=${{ env.TF_VAR_environment }}"                                 -var="region=${{ env.TF_VAR_region }}"
+        run: terraform plan 
         id: plan_prd
 
       - name: Terraform Apply PRD
