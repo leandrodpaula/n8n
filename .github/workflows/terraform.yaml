@@ -44,7 +44,9 @@ jobs:
 
       # 4. Inicializar o Terraform
       - name: Terraform Init
-        run: terraform init
+        run: |
+          cd terraform
+          terraform init -backend-config="bucket=${TF_VAR_project_id}-tfstate" -backend-config="prefix=${TF_VAR_service_name}/${TF_VAR_environment}"
 
       # 5. Validar o código Terraform
       - name: Terraform Validate
@@ -84,7 +86,9 @@ jobs:
           credentials_json: ${{ env.GOOGLE_CREDENTIALS }}
 
       - name: Terraform Init
-        run: terraform init
+        run: |
+          cd terraform
+          terraform init -backend-config="bucket=${TF_VAR_project_id}-tfstate" -backend-config="prefix=${TF_VAR_service_name}/${TF_VAR_environment}"
 
       # Terraform Validate is usually not strictly needed here if HML validated, but good for consistency
       - name: Terraform Validate
