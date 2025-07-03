@@ -1,34 +1,29 @@
-resource "google_alloydb_cluster" "alloydb_cluster" {
-  project       = var.project_id
-  location      = var.region
-  cluster_id    = "${var.service_name}-${var.environment}-alloydb-cluster"
-  network_config {
-    network = google_compute_network.vpc_network.id
+resource "google_sql_database_instance" "postgres_instance" {
+  project          = var.project_id
+  name             = "${var.service_name}-${var.environment}-pg-instance"
+  region           = var.region
+  database_version = "POSTGRES_15" # Specify your desired PostgreSQL version
+
+  settings {
+    tier    = "db-f1-micro" # Choose an appropriate machine type
+    ip_configuration {
+      ipv4_enabled    = true
+      private_network = google_compute_network.vpc_network.id
+    }
   }
-  initial_user {
-    user     = "${var.service_name}_user"
-    password = google_secret_manager_secret_version.db_password_version.secret_data
-  }
+  deletion_protection = false # Set to true for production environments
   depends_on = [google_service_networking_connection.private_vpc_connection]
 }
 
-resource "google_alloydb_instance" "alloydb_instance" {
-  cluster           = google_alloydb_cluster.alloydb_cluster.name
-  instance_id       = "${var.service_name}-${var.environment}-alloydb-instance"
-  instance_type     = "PRIMARY" # Basic instance type, consider changing for production
-  machine_config {
-    cpu_count = 2
-  }
-  # availability_type = "REGIONAL" # Or "ZONAL" depending on requirements. Default is ZONAL if not specified.
-
-  # Deletion protection should ideally be true for production environments
-  # deletion_protection = false
+resource "google_sql_database" "postgres_database" {
+  project  = var.project_id
+  instance = google_sql_database_instance.postgres_instance.name
+  name     = "${var.service_name}_db" # Define your database name
 }
 
-# Note: In AlloyDB, databases are typically created by applications upon connection if they don't exist.
-# If a specific database resource is needed at the Terraform level, it would be google_alloydb_database.
-# For now, we are relying on the initial_user and application to handle database creation.
-
-# The google_alloydb_user resource is for managing additional users if needed,
-# beyond the initial_user specified in the cluster.
-# We are using initial_user for simplicity in this migration.
+resource "google_sql_user" "postgres_user" {
+  project  = var.project_id
+  instance = google_sql_database_instance.postgres_instance.name
+  name     = "${var.service_name}_user" # Define your database user
+  password = google_secret_manager_secret_version.db_password_version.secret_data
+}

@@ -110,7 +110,7 @@ resource "google_cloud_run_v2_service" "cloud_run" {
         }
         env {
           name  = "DB_POSTGRESDB_HOST"
-          value = google_alloydb_instance.alloydb_instance.ip_address
+          value = google_sql_database_instance.postgres_instance.private_ip_address
         }
         env {
           name  = "DB_POSTGRESDB_PORT"
@@ -118,11 +118,11 @@ resource "google_cloud_run_v2_service" "cloud_run" {
         }
         env {
           name  = "DB_POSTGRESDB_DATABASE"
-          value = "${var.service_name}_user"
+          value = google_sql_database.postgres_database.name
         }
         env {
           name  = "DB_POSTGRESDB_USER"
-          value = google_alloydb_cluster.alloydb_cluster.initial_user[0].user
+          value = google_sql_user.postgres_user.name
         }
         env {
           name  = "DB_POSTGRESDB_PASSWORD"
@@ -136,7 +136,7 @@ resource "google_cloud_run_v2_service" "cloud_run" {
     }
   }
 
-  depends_on = [google_alloydb_instance.alloydb_instance]
+  depends_on = [google_sql_database_instance.postgres_instance]
 }
 
 # Permitir acesso público ao Cloud Run
